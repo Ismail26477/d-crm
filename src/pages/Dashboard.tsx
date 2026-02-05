@@ -61,6 +61,7 @@ const Dashboard = () => {
   const [callers, setCallers] = useState<Caller[]>([])
   const [callLogs, setCallLogs] = useState<CallLog[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [followUps, setFollowUps] = useState<any[]>([]) // Declare followUps variable
 
   useEffect(() => {
@@ -68,28 +69,48 @@ const Dashboard = () => {
       try {
         console.log("[v0] Fetching dashboard data...")
         const [statsData, leadsData, activitiesData, callersData, callLogsData, followUpsData] = await Promise.all([
-          fetchDashboardStats(),
-          fetchLeads(),
-          fetchActivities(),
-          fetchCallers(),
-          fetchCallLogs(),
-          fetchFollowUps(),
+          fetchDashboardStats().catch(e => {
+            console.error("[v0] Dashboard stats error:", e)
+            return null
+          }),
+          fetchLeads().catch(e => {
+            console.error("[v0] Leads error:", e)
+            return []
+          }),
+          fetchActivities().catch(e => {
+            console.error("[v0] Activities error:", e)
+            return []
+          }),
+          fetchCallers().catch(e => {
+            console.error("[v0] Callers error:", e)
+            return []
+          }),
+          fetchCallLogs().catch(e => {
+            console.error("[v0] Call logs error:", e)
+            return []
+          }),
+          fetchFollowUps().catch(e => {
+            console.error("[v0] Follow-ups error:", e)
+            return []
+          }),
         ])
 
         console.log("[v0] Dashboard stats received:", statsData)
-        console.log("[v0] Leads count:", leadsData.length)
-        console.log("[v0] Active Leads:", statsData?.activeLeads)
-        console.log("[v0] Hot Leads:", statsData?.hotLeads)
-        console.log("[v0] Deals Closed:", statsData?.dealsClosed)
+        console.log("[v0] Leads count:", leadsData?.length || 0)
 
-        setStats(statsData)
-        setLeads(leadsData)
-        setActivitiesData(activitiesData)
-        setCallers(callersData)
-        setCallLogs(callLogsData)
-        setFollowUps(followUpsData?.filter((fu) => fu.status === "pending") || [])
+        if (statsData) {
+          setStats(statsData)
+          setLeads(leadsData || [])
+          setActivitiesData(activitiesData || [])
+          setCallers(callersData || [])
+          setCallLogs(callLogsData || [])
+          setFollowUps(followUpsData?.filter((fu: any) => fu.status === "pending") || [])
+        } else {
+          setError("Backend API not available. Make sure the server is running.")
+        }
       } catch (error) {
         console.error("[v0] Error fetching dashboard data:", error)
+        setError("Failed to fetch dashboard data. Please refresh the page.")
       } finally {
         setLoading(false)
       }
@@ -104,6 +125,23 @@ const Dashboard = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">⚠️</span>
+          </div>
+          <h2 className="text-xl font-semibold text-foreground mb-2">Error Loading Dashboard</h2>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Retry
+          </Button>
         </div>
       </div>
     )
