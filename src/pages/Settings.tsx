@@ -29,6 +29,7 @@ const Settings = () => {
   const [integrations, setIntegrations] = useState<Record<string, any>>({})
   const [integrationLoading, setIntegrationLoading] = useState<Record<string, boolean>>({})
   const [showIntegrationModal, setShowIntegrationModal] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const [emailSettings, setEmailSettings] = useState({
     smtpServer: "smtp.gmail.com",
@@ -51,38 +52,46 @@ const Settings = () => {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const settings = await fetchSettings()
+        setError(null)
+        const settings = await fetchSettings().catch(() => null)
+        const integrationsData = await fetchIntegrations().catch(() => [])
 
-        if (settings.emailConfig) {
-          setEmailSettings({
-            smtpServer: settings.emailConfig.smtpServer || "smtp.gmail.com",
-            smtpPort: settings.emailConfig.smtpPort || "587",
-            senderEmail: settings.emailConfig.senderEmail || "",
-            senderPassword: settings.emailConfig.senderPassword || "",
-            enableNotifications: settings.emailConfig.enableNotifications || false,
-            notifyOnAssignment: settings.emailConfig.notifyOnAssignment || false,
-            notifyOnStageChange: settings.emailConfig.notifyOnStageChange || false,
-          })
+        if (settings) {
+          if (settings.emailConfig) {
+            setEmailSettings({
+              smtpServer: settings.emailConfig.smtpServer || "smtp.gmail.com",
+              smtpPort: settings.emailConfig.smtpPort || "587",
+              senderEmail: settings.emailConfig.senderEmail || "",
+              senderPassword: settings.emailConfig.senderPassword || "",
+              enableNotifications: settings.emailConfig.enableNotifications || false,
+              notifyOnAssignment: settings.emailConfig.notifyOnAssignment || false,
+              notifyOnStageChange: settings.emailConfig.notifyOnStageChange || false,
+            })
+          }
+
+          if (settings.leadAssignment) {
+            setLeadSettings({
+              autoAssign: settings.leadAssignment.autoAssign || false,
+              roundRobin: settings.leadAssignment.roundRobin || false,
+              defaultStage: settings.leadAssignment.defaultStage || "new",
+              defaultCallType: settings.leadAssignment.defaultCallType || "outbound",
+              defaultFollowUpHours: settings.leadAssignment.defaultFollowUpHours || 24,
+            })
+          }
+        } else {
+          setError("Backend API not available. Using default settings.")
         }
 
-        if (settings.leadAssignment) {
-          setLeadSettings({
-            autoAssign: settings.leadAssignment.autoAssign || false,
-            roundRobin: settings.leadAssignment.roundRobin || false,
-            defaultStage: settings.leadAssignment.defaultStage || "new",
-            defaultCallType: settings.leadAssignment.defaultCallType || "outbound",
-            defaultFollowUpHours: settings.leadAssignment.defaultFollowUpHours || 24,
+        if (integrationsData && Array.isArray(integrationsData)) {
+          const integrationsMap: Record<string, any> = {}
+          integrationsData.forEach((integration: any) => {
+            integrationsMap[integration.type] = integration
           })
+          setIntegrations(integrationsMap)
         }
-
-        const integrationsData = await fetchIntegrations()
-        const integrationsMap: Record<string, any> = {}
-        integrationsData.forEach((integration: any) => {
-          integrationsMap[integration.type] = integration
-        })
-        setIntegrations(integrationsMap)
-      } catch (error) {
+      } catch (error: any) {
         console.error("[v0] Error loading settings:", error)
+        setError(error?.message || "Failed to load settings. Backend API may not be available.")
         toast({
           title: "Error",
           description: "Failed to load settings",
@@ -227,6 +236,19 @@ const Settings = () => {
         <h1 className="text-3xl font-bold font-display text-foreground">Settings</h1>
         <p className="text-muted-foreground mt-1">Configure your CRM preferences</p>
       </div>
+
+      {error && (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">⚠️</span>
+            <div>
+              <h4 className="font-semibold text-amber-900">API Connection Issue</h4>
+              <p className="text-sm text-amber-700 mt-1">{error}</p>
+              <p className="text-xs text-amber-600 mt-2">You can still configure settings locally, but changes may not persist.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Tabs defaultValue="email" className="space-y-6">
         <TabsList className="grid w-full max-w-2xl grid-cols-4">
