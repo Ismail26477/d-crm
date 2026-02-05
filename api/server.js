@@ -12,6 +12,9 @@ import settingsRoutes from "../server/routes/settings.js"
 import reportsRoutes from "../server/routes/reports.js"
 import Caller from "../server/models/Caller.js"
 import meetingRoutes from "../server/routes/meetings.js"
+import brokersRoutes from "../server/routes/brokers.js"
+import followupsRoutes from "../server/routes/followups.js"
+import integrationsRoutes from "../server/routes/integrations.js"
 
 dotenv.config()
 
@@ -164,6 +167,9 @@ app.use("/api/dashboard", dashboardRoutes)
 app.use("/api/reports", reportsRoutes)
 app.use("/api/settings", settingsRoutes)
 app.use("/api/meetings", meetingRoutes)
+app.use("/api/brokers", brokersRoutes)
+app.use("/api/followups", followupsRoutes)
+app.use("/api/integrations", integrationsRoutes)
 
 // 404 handler
 app.use("/api/*", (req, res) => {
