@@ -23,6 +23,7 @@ export default function Brokers() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDetailDrawerOpen, setIsDetailDrawerOpen] = useState(false)
   const [selectedBroker, setSelectedBroker] = useState<Broker | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -42,13 +43,16 @@ export default function Brokers() {
   const loadBrokers = async () => {
     try {
       setLoading(true)
+      setError(null)
       const data = await fetchBrokers()
-      setBrokers(data)
-    } catch (error) {
+      setBrokers(data || [])
+    } catch (error: any) {
       console.error("Error loading brokers:", error)
+      const errorMsg = error?.message || "Failed to load brokers. Backend API may not be available."
+      setError(errorMsg)
       toast({
         title: "Error",
-        description: "Failed to load brokers",
+        description: errorMsg,
         variant: "destructive",
       })
     } finally {
@@ -151,6 +155,20 @@ export default function Brokers() {
           </div>
         </CardHeader>
         <CardContent>
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">⚠️</span>
+                <div>
+                  <h4 className="font-semibold text-red-900">Failed to Load Brokers</h4>
+                  <p className="text-sm text-red-700 mt-1">{error}</p>
+                  <Button size="sm" variant="outline" onClick={loadBrokers} className="mt-3 bg-transparent">
+                    Retry
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
           {loading ? (
             <div className="text-center py-8 text-muted-foreground">Loading brokers...</div>
           ) : filteredBrokers.length === 0 ? (
