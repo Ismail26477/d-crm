@@ -318,7 +318,7 @@ const Leads = () => {
 
       const matchesSearch =
         searchQuery === "" ||
-        lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (lead.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
         (lead.email?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
         (lead.phone || "").includes(searchQuery) ||
         (lead.city?.toLowerCase() || "").includes(searchQuery.toLowerCase())
@@ -356,7 +356,7 @@ const Leads = () => {
       let comparison = 0
       switch (sortField) {
         case "name":
-          comparison = a.name.localeCompare(b.name)
+          comparison = (a.name || "").localeCompare(b.name || "")
           break
         case "createdAt":
           comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
