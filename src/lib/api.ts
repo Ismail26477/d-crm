@@ -34,7 +34,15 @@ console.log("[v0] Final API_BASE_URL:", API_BASE_URL)
 export const fetchLeads = async () => {
   const response = await fetch(`${API_BASE_URL}/leads`)
   if (!response.ok) throw new Error("Failed to fetch leads")
-  return response.json()
+  const data = await response.json()
+  // Normalize data to ensure all required string fields have default values
+  return data.map((lead: any) => ({
+    ...lead,
+    name: lead.name || "",
+    email: lead.email || "",
+    phone: lead.phone || "",
+    city: lead.city || "",
+  }))
 }
 
 export const createLead = async (leadData: any) => {
