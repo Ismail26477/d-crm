@@ -319,9 +319,9 @@ const Leads = () => {
       const matchesSearch =
         searchQuery === "" ||
         lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        lead.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        lead.phone.includes(searchQuery) ||
-        lead.city.toLowerCase().includes(searchQuery.toLowerCase())
+        (lead.email?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+        (lead.phone || "").includes(searchQuery) ||
+        (lead.city?.toLowerCase() || "").includes(searchQuery.toLowerCase())
 
       const matchesStage = stageFilter === "all" || lead.stage === stageFilter
       const matchesPriority = priorityFilter === "all" || lead.priority === priorityFilter
