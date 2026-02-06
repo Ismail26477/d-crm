@@ -1402,4 +1402,4 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
       </DialogContent>
     </Dialog>
   )
-}
+};
