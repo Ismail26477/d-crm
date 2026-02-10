@@ -55,7 +55,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { leadSourceLabels, leadCategoryLabels, leadSubcategoryLabels } from "@/data/mockData"
+import { leadSourceLabels } from "@/data/mockData"
 import { StageBadge, PriorityBadge } from "@/components/ui/stage-badge"
 import type { Lead, LeadStage, LeadPriority, LeadSource, Caller } from "@/types/crm"
 import { useToast } from "@/hooks/use-toast"
@@ -125,8 +125,6 @@ const Leads = () => {
   const [callerFilter, setCallerFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [sourceFilter, setSourceFilter] = useState<string>("all")
-  const [categoryFilter, setCategoryFilter] = useState<string>("all")
-  const [subcategoryFilter, setSubcategoryFilter] = useState<string>("all")
   const [dateFilter, setDateFilter] = useState<DateFilter>("all")
   const [dialPadOpen, setDialPadOpen] = useState(false)
   const [dialPadNumber, setDialPadNumber] = useState("")
@@ -191,8 +189,6 @@ const Leads = () => {
             status: lead.status || "active",
             stage: lead.stage || "new",
             priority: lead.priority || "warm",
-            category: lead.category || "property",
-            subcategory: lead.subcategory || "india_property",
             value: lead.value || 0,
             source: lead.source || "other",
           }),
@@ -243,8 +239,7 @@ const Leads = () => {
       "Stage",
       "Priority",
       "Status",
-      "Category", // Added Category
-      "Subcategory", // Added Subcategory
+
       "Assigned To",
       "Created At",
     ]
@@ -261,8 +256,6 @@ const Leads = () => {
           lead.stage,
           lead.priority,
           lead.status,
-          leadCategoryLabels[lead.category] || lead.category, // Added Category Label
-          leadSubcategoryLabels[lead.subcategory] || lead.subcategory, // Added Subcategory Label
           `"${lead.assignedCallerName || ""}"`,
           lead.createdAt,
         ].join(","),
@@ -328,8 +321,7 @@ const Leads = () => {
       const matchesCaller = callerFilter === "all" || lead.assignedCaller === callerFilter
       const matchesStatus = statusFilter === "all" || lead.status === statusFilter
       const matchesSource = sourceFilter === "all" || lead.source === sourceFilter
-      const matchesCategory = categoryFilter === "all" || lead.category === categoryFilter
-      const matchesSubcategory = subcategoryFilter === "all" || lead.subcategory === subcategoryFilter
+
 
       const dateRange = getDateRange(dateFilter)
       const matchesDate = !dateRange || isWithinInterval(parseISO(lead.createdAt), dateRange)
@@ -345,8 +337,6 @@ const Leads = () => {
         matchesCaller &&
         matchesStatus &&
         matchesSource &&
-        matchesCategory &&
-        matchesSubcategory &&
         matchesDate &&
         matchesValue
       )
@@ -381,8 +371,7 @@ const Leads = () => {
     callerFilter,
     statusFilter,
     sourceFilter,
-    categoryFilter,
-    subcategoryFilter, // Added subcategory to dependency array
+
     dateFilter,
     customDateRange,
     valueRange,
@@ -656,8 +645,7 @@ const Leads = () => {
     setCallerFilter("all")
     setStatusFilter("all")
     setSourceFilter("all")
-    setCategoryFilter("all")
-    setSubcategoryFilter("all") // Reset subcategory filter
+
     setDateFilter("all")
     setCustomDateRange({})
     setValueRange({ min: "", max: "" })
@@ -671,8 +659,7 @@ const Leads = () => {
     callerFilter !== "all",
     statusFilter !== "all",
     sourceFilter !== "all",
-    categoryFilter !== "all",
-    subcategoryFilter !== "all", // Count subcategory filter
+
     dateFilter !== "all",
     valueRange.min !== "" || valueRange.max !== "",
   ].filter(Boolean).length
