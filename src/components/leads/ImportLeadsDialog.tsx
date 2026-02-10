@@ -327,7 +327,13 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
   }
 
   const handleImport = () => {
-    onImport(parsedLeads)
+    // Ensure all leads have default category and subcategory
+    const leadsWithDefaults = parsedLeads.map((lead) => ({
+      ...lead,
+      category: lead.category || "property",
+      subcategory: lead.subcategory || "india_property",
+    }))
+    onImport(leadsWithDefaults)
     setStep("complete")
   }
 
