@@ -19,11 +19,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import type { Lead, LeadSource, LeadStage, LeadPriority, LeadStatus, LeadCategory, LeadSubcategory } from "@/types/crm"
+import type { Lead, LeadSource, LeadStage, LeadPriority, LeadStatus } from "@/types/crm"
 import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import { leadCategoryLabels, leadSubcategoryLabels, categorySubcategoryMap } from "@/data/mockData"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { fetchCallers } from "@/lib/api"
 
@@ -100,10 +99,7 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
   const [selectedCaller, setSelectedCaller] = useState<string>("")
   const [callers, setCallers] = useState<any[]>([])
 
-  const [defaultCategory, setDefaultCategory] = useState<LeadCategory>("property")
-  const [defaultSubcategory, setDefaultSubcategory] = useState<LeadSubcategory>("india_property")
 
-  const availableSubcategories = categorySubcategoryMap[defaultCategory] || []
 
   useEffect(() => {
     const loadCallers = async () => {
@@ -124,13 +120,7 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
     }
   }, [open])
 
-  useEffect(() => {
-    if (defaultCategory && availableSubcategories.length > 0) {
-      if (!availableSubcategories.includes(defaultSubcategory)) {
-        setDefaultSubcategory(availableSubcategories[0] as LeadSubcategory)
-      }
-    }
-  }, [defaultCategory, availableSubcategories, defaultSubcategory])
+
 
   const resetState = () => {
     setStep("upload")
@@ -143,8 +133,6 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
     setIsProcessing(false)
     setAssignmentMode("auto")
     setSelectedCaller("")
-    setDefaultCategory("property")
-    setDefaultSubcategory("india_property")
   }
 
   const handleClose = () => {
@@ -256,8 +244,7 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
         status: "active" as LeadStatus,
         stage: "new" as LeadStage,
         priority: "warm" as LeadPriority,
-        category: defaultCategory,
-        subcategory: defaultSubcategory,
+
       }
 
       Object.entries(columnMapping).forEach(([fieldKey, columnName]) => {
@@ -298,6 +285,8 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
           case "notes":
             lead.notes = String(value).trim()
             break
+          
+          
         }
       })
 
@@ -327,19 +316,7 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
   }
 
   const handleImport = () => {
-    // Ensure all leads have valid string values for category and subcategory
-    const leadsWithDefaults = parsedLeads.map((lead) => {
-      const category = (lead.category || "property") as string
-      const subcategory = (lead.subcategory || "india_property") as string
-      
-      // Ensure values are never empty or null before sending
-      return {
-        ...lead,
-        category: category && typeof category === "string" ? category : "property",
-        subcategory: subcategory && typeof subcategory === "string" ? subcategory : "india_property",
-      }
-    })
-    onImport(leadsWithDefaults)
+    onImport(parsedLeads)
     setStep("complete")
   }
 
