@@ -24,8 +24,6 @@ router.get("/", async (req, res) => {
       stage: lead.stage,
       priority: lead.priority,
       status: lead.status,
-      category: lead.category,
-      subcategory: lead.subcategory,
       assignedCaller: lead.assignedCaller?.toString(),
       assignedCallerName: lead.assignedCallerName,
       assignedBroker: lead.assignedBroker?.toString(),
@@ -50,16 +48,9 @@ router.post("/", async (req, res) => {
     const leadData = { ...req.body }
     delete leadData.id
     
-    // Ensure category and subcategory always have valid default values
-    const validCategories = ["property", "loans", "other"]
-    const validSubcategories = ["india_property", "australia_property", "dubai_property", "personal_loan", "home_loan", "business_loan", "other"]
-    
-    if (!leadData.category || typeof leadData.category !== "string" || !validCategories.includes(leadData.category)) {
-      leadData.category = "property"
-    }
-    if (!leadData.subcategory || typeof leadData.subcategory !== "string" || !validSubcategories.includes(leadData.subcategory)) {
-      leadData.subcategory = "india_property"
-    }
+    // Remove category and subcategory from incoming data
+    delete leadData.category
+    delete leadData.subcategory
 
     const assignmentResult = await autoAssignLead()
 
@@ -120,8 +111,6 @@ router.post("/", async (req, res) => {
       stage: leadObj.stage,
       priority: leadObj.priority,
       status: leadObj.status,
-      category: leadObj.category,
-      subcategory: leadObj.subcategory,
       assignedCaller: leadObj.assignedCaller?.toString(),
       assignedCallerName: leadObj.assignedCallerName,
       assignedBroker: leadObj.assignedBroker?.toString(),

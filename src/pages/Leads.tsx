@@ -191,8 +191,6 @@ const Leads = () => {
             status: lead.status || "active",
             stage: lead.stage || "new",
             priority: lead.priority || "warm",
-            category: lead.category || "property",
-            subcategory: lead.subcategory || "india_property",
             value: lead.value || 0,
             source: lead.source || "other",
           }),

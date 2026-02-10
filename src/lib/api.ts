@@ -46,19 +46,10 @@ export const fetchLeads = async () => {
 }
 
 export const createLead = async (leadData: any) => {
-  // Ensure category and subcategory always have default values
-  const dataWithDefaults = {
-    ...leadData,
-    category: leadData.category || "property",
-    subcategory: leadData.subcategory || "india_property",
-  }
-  
   // Remove undefined and empty string values
   const cleanedData = Object.fromEntries(
-    Object.entries(dataWithDefaults).filter(([_, v]) => v !== undefined && v !== "")
+    Object.entries(leadData).filter(([_, v]) => v !== undefined && v !== "")
   )
-  
-  console.log("[v0] Sending to API:", cleanedData)
   
   const response = await fetch(`${API_BASE_URL}/leads`, {
     method: "POST",
@@ -66,9 +57,7 @@ export const createLead = async (leadData: any) => {
     body: JSON.stringify(cleanedData),
   })
   if (!response.ok) throw new Error("Failed to create lead")
-  const result = await response.json()
-  console.log("[v0] API response:", result)
-  return result
+  return response.json()
 }
 
 export const updateLead = async (id: string, leadData: any) => {

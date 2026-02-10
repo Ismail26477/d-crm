@@ -326,28 +326,6 @@ export const leadStatusLabels: Record<string, string> = {
   not_interested: "Not Interested",
 }
 
-export const leadCategoryLabels: Record<string, string> = {
-  property: "Property",
-  loans: "Loans",
-  other: "Other",
-}
-
-export const leadSubcategoryLabels: Record<string, string> = {
-  india_property: "India Property",
-  australia_property: "Australia Property",
-  dubai_property: "Dubai Property",
-  personal_loan: "Personal Loan",
-  home_loan: "Home Loan",
-  business_loan: "Business Loan",
-  other: "Other",
-}
-
-export const categorySubcategoryMap: Record<string, string[]> = {
-  property: ["india_property", "australia_property", "dubai_property"],
-  loans: ["personal_loan", "home_loan", "business_loan"],
-  other: ["other"],
-}
-
 export const mockCallLogs: CallLog[] = [
   {
     id: "c1",

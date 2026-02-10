@@ -19,11 +19,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import type { Lead, LeadSource, LeadStage, LeadPriority, LeadStatus, LeadCategory, LeadSubcategory } from "@/types/crm"
+import type { Lead, LeadSource, LeadStage, LeadPriority, LeadStatus } from "@/types/crm"
 import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import { leadCategoryLabels, leadSubcategoryLabels, categorySubcategoryMap } from "@/data/mockData"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { fetchCallers } from "@/lib/api"
 
@@ -33,7 +32,7 @@ interface ImportLeadsDialogProps {
   onImport: (leads: Partial<Lead>[]) => void
 }
 
-type Step = "upload" | "mapping" | "assignment" | "preview" | "complete"
+type Step = "upload" | "mapping" | "preview" | "complete"
 
 const leadFields = [
   { key: "name", label: "Name", required: true },
@@ -100,11 +99,6 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
   const [selectedCaller, setSelectedCaller] = useState<string>("")
   const [callers, setCallers] = useState<any[]>([])
 
-  const [defaultCategory, setDefaultCategory] = useState<LeadCategory>("property")
-  const [defaultSubcategory, setDefaultSubcategory] = useState<LeadSubcategory>("india_property")
-
-  const availableSubcategories = categorySubcategoryMap[defaultCategory] || []
-
   useEffect(() => {
     const loadCallers = async () => {
       try {
@@ -124,14 +118,6 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
     }
   }, [open])
 
-  useEffect(() => {
-    if (defaultCategory && availableSubcategories.length > 0) {
-      if (!availableSubcategories.includes(defaultSubcategory)) {
-        setDefaultSubcategory(availableSubcategories[0] as LeadSubcategory)
-      }
-    }
-  }, [defaultCategory, availableSubcategories, defaultSubcategory])
-
   const resetState = () => {
     setStep("upload")
     setFile(null)
@@ -143,8 +129,6 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
     setIsProcessing(false)
     setAssignmentMode("auto")
     setSelectedCaller("")
-    setDefaultCategory("property")
-    setDefaultSubcategory("india_property")
   }
 
   const handleClose = () => {
@@ -303,14 +287,6 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
 
       if (!lead.name || !lead.phone) return
 
-      // Ensure category and subcategory are NEVER undefined
-      if (!lead.category || typeof lead.category !== "string") {
-        lead.category = defaultCategory || "property"
-      }
-      if (!lead.subcategory || typeof lead.subcategory !== "string") {
-        lead.subcategory = defaultSubcategory || "india_property"
-      }
-
       const normalizedPhone = lead.phone.replace(/\s/g, "")
       if (phoneSet.has(normalizedPhone)) {
         dupCount++
@@ -335,33 +311,7 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
   }
 
   const handleImport = () => {
-    // Ensure all leads have valid string values for category and subcategory
-    const leadsWithDefaults = parsedLeads.map((lead) => {
-      // Safety check: Ensure category and subcategory are ALWAYS set
-      const finalLead = {
-        ...lead,
-        category: (lead.category && typeof lead.category === "string" && lead.category.length > 0) 
-          ? lead.category 
-          : "property",
-        subcategory: (lead.subcategory && typeof lead.subcategory === "string" && lead.subcategory.length > 0) 
-          ? lead.subcategory 
-          : "india_property",
-      }
-      
-      // Additional safety: validate enum values
-      const validCategories = ["property", "loans", "other"]
-      const validSubcategories = ["india_property", "australia_property", "dubai_property", "personal_loan", "home_loan", "business_loan", "other"]
-      
-      if (!validCategories.includes(finalLead.category)) {
-        finalLead.category = "property"
-      }
-      if (!validSubcategories.includes(finalLead.subcategory)) {
-        finalLead.subcategory = "india_property"
-      }
-      
-      return finalLead
-    })
-    onImport(leadsWithDefaults)
+    onImport(parsedLeads)
     setStep("complete")
   }
 
@@ -382,29 +332,29 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
         </DialogHeader>
 
         <div className="flex items-center justify-center gap-2 py-4">
-          {["upload", "mapping", "assignment", "preview", "complete"].map((s, i) => (
+          {["upload", "mapping", "preview", "complete"].map((s, i) => (
             <div key={s} className="flex items-center">
               <div
                 className={cn(
                   "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors",
                   step === s
                     ? "bg-primary text-primary-foreground"
-                    : ["mapping", "assignment", "preview", "complete"].indexOf(step) > i - 1
+                    : ["mapping", "preview", "complete"].indexOf(step) > i - 1
                       ? "bg-success text-success-foreground"
                       : "bg-muted text-muted-foreground",
                 )}
               >
-                {["mapping", "assignment", "preview", "complete"].indexOf(step) > i - 1 ? (
+                {["mapping", "preview", "complete"].indexOf(step) > i - 1 ? (
                   <Check className="w-4 h-4" />
                 ) : (
                   i + 1
                 )}
               </div>
-              {i < 4 && (
+              {i < 3 && (
                 <div
                   className={cn(
                     "w-12 h-0.5 mx-1",
-                    ["mapping", "assignment", "preview", "complete"].indexOf(step) > i - 1 ? "bg-success" : "bg-muted",
+                    ["mapping", "preview", "complete"].indexOf(step) > i - 1 ? "bg-success" : "bg-muted",
                   )}
                 />
               )}
@@ -509,74 +459,6 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
             </div>
           )}
 
-          {step === "assignment" && (
-            <div className="space-y-6">
-              <Card>
-              
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">Lead Assignment Options</h3>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    Choose how to assign the imported leads to callers
-                  </p>
-
-                  <RadioGroup value={assignmentMode} onValueChange={(val: "auto" | "single") => setAssignmentMode(val)}>
-                    <div className="space-y-4">
-                      <div
-                        className="flex items-start space-x-3 p-4 rounded-lg border-2 hover:border-primary transition-colors cursor-pointer"
-                        onClick={() => setAssignmentMode("auto")}
-                      >
-                        <RadioGroupItem value="auto" id="auto" className="mt-0.5" />
-                        <Label htmlFor="auto" className="flex-1 cursor-pointer">
-                          <div className="font-medium mb-1">Auto Assign</div>
-                          <p className="text-sm text-muted-foreground">
-                            Automatically distribute leads evenly among all active callers
-                          </p>
-                        </Label>
-                      </div>
-
-                      <div
-                        className="flex items-start space-x-3 p-4 rounded-lg border-2 hover:border-primary transition-colors cursor-pointer"
-                        onClick={() => setAssignmentMode("single")}
-                      >
-                        <RadioGroupItem value="single" id="single" className="mt-0.5" />
-                        <Label htmlFor="single" className="flex-1 cursor-pointer">
-                          <div className="font-medium mb-1">Single Caller Assignment</div>
-                          <p className="text-sm text-muted-foreground">
-                            Assign all imported leads to a specific caller
-                          </p>
-                        </Label>
-                      </div>
-                    </div>
-                  </RadioGroup>
-
-                  {assignmentMode === "single" && (
-                    <div className="mt-6 space-y-2">
-                      <Label htmlFor="caller-select">Select Caller</Label>
-                      <Select value={selectedCaller} onValueChange={setSelectedCaller}>
-                        <SelectTrigger id="caller-select">
-                          <SelectValue placeholder="Choose a caller..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {callers.map((caller) => (
-                            <SelectItem key={caller.id} value={caller.id}>
-                              {caller.name} - {caller.email}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {!selectedCaller && (
-                        <p className="text-sm text-destructive">Please select a caller to continue</p>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
           {step === "preview" && (
             <div className="space-y-4">
               <div className="flex items-center gap-4">
@@ -605,17 +487,6 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
                   </Card>
                 )}
               </div>
-
-              <Card>
-                <CardContent className="p-4">
-                  <p className="text-sm font-medium mb-2">Assignment Method:</p>
-                  <Badge variant="secondary">
-                    {assignmentMode === "auto"
-                      ? "Auto Assign (Distributed Evenly)"
-                      : `Assigned to ${callers.find((c) => c.id === selectedCaller)?.name || "Selected Caller"}`}
-                  </Badge>
-                </CardContent>
-              </Card>
 
               <div className="border rounded-lg overflow-hidden">
                 <Table>
@@ -666,24 +537,8 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
                 Back
               </Button>
               <Button
-                onClick={() => setStep("assignment")}
-                disabled={!requiredFieldsMapped}
-                className="btn-gradient-primary"
-              >
-                Continue
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </>
-          )}
-          {step === "assignment" && (
-            <>
-              <Button variant="outline" onClick={() => setStep("mapping")}>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
-              </Button>
-              <Button
                 onClick={processLeads}
-                disabled={assignmentMode === "single" && !selectedCaller}
+                disabled={!requiredFieldsMapped}
                 className="btn-gradient-primary"
               >
                 Continue
@@ -693,7 +548,7 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
           )}
           {step === "preview" && (
             <>
-              <Button variant="outline" onClick={() => setStep("assignment")}>
+              <Button variant="outline" onClick={() => setStep("mapping")}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>

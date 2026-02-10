@@ -2,15 +2,6 @@ export type LeadStage = "new" | "qualified" | "proposal" | "negotiation" | "won"
 export type LeadPriority = "hot" | "warm" | "cold"
 export type LeadStatus = "interested" | "callback" | "not_interested" | "active" | "inactive" | "paused"
 export type LeadSource = "website" | "google_ads" | "referral" | "social_media" | "walk_in" | "other"
-export type LeadCategory = "property" | "loans" | "other"
-export type LeadSubcategory =
-  | "india_property"
-  | "australia_property"
-  | "dubai_property"
-  | "personal_loan"
-  | "home_loan"
-  | "business_loan"
-  | "other"
 export type UserRole = "admin" | "caller"
 export type CallbackReason = "on_request" | "not_picked" | "not_reachable" | "switched_off" | "other"
 export type NotInterestedReason =
@@ -33,8 +24,6 @@ export interface Lead {
   stage: LeadStage
   priority: LeadPriority
   status: LeadStatus
-  category: LeadCategory
-  subcategory: LeadSubcategory
   assignedCaller?: string
   assignedCallerName?: string
   assignedBroker?: string
