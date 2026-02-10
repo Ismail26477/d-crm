@@ -303,6 +303,14 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
 
       if (!lead.name || !lead.phone) return
 
+      // Ensure category and subcategory are NEVER undefined
+      if (!lead.category || typeof lead.category !== "string") {
+        lead.category = defaultCategory || "property"
+      }
+      if (!lead.subcategory || typeof lead.subcategory !== "string") {
+        lead.subcategory = defaultSubcategory || "india_property"
+      }
+
       const normalizedPhone = lead.phone.replace(/\s/g, "")
       if (phoneSet.has(normalizedPhone)) {
         dupCount++
@@ -329,15 +337,29 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
   const handleImport = () => {
     // Ensure all leads have valid string values for category and subcategory
     const leadsWithDefaults = parsedLeads.map((lead) => {
-      const category = (lead.category || "property") as string
-      const subcategory = (lead.subcategory || "india_property") as string
-      
-      // Ensure values are never empty or null before sending
-      return {
+      // Safety check: Ensure category and subcategory are ALWAYS set
+      const finalLead = {
         ...lead,
-        category: category && typeof category === "string" ? category : "property",
-        subcategory: subcategory && typeof subcategory === "string" ? subcategory : "india_property",
+        category: (lead.category && typeof lead.category === "string" && lead.category.length > 0) 
+          ? lead.category 
+          : "property",
+        subcategory: (lead.subcategory && typeof lead.subcategory === "string" && lead.subcategory.length > 0) 
+          ? lead.subcategory 
+          : "india_property",
       }
+      
+      // Additional safety: validate enum values
+      const validCategories = ["property", "loans", "other"]
+      const validSubcategories = ["india_property", "australia_property", "dubai_property", "personal_loan", "home_loan", "business_loan", "other"]
+      
+      if (!validCategories.includes(finalLead.category)) {
+        finalLead.category = "property"
+      }
+      if (!validSubcategories.includes(finalLead.subcategory)) {
+        finalLead.subcategory = "india_property"
+      }
+      
+      return finalLead
     })
     onImport(leadsWithDefaults)
     setStep("complete")

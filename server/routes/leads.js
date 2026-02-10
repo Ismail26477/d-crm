@@ -51,10 +51,13 @@ router.post("/", async (req, res) => {
     delete leadData.id
     
     // Ensure category and subcategory always have valid default values
-    if (!leadData.category || typeof leadData.category !== "string") {
+    const validCategories = ["property", "loans", "other"]
+    const validSubcategories = ["india_property", "australia_property", "dubai_property", "personal_loan", "home_loan", "business_loan", "other"]
+    
+    if (!leadData.category || typeof leadData.category !== "string" || !validCategories.includes(leadData.category)) {
       leadData.category = "property"
     }
-    if (!leadData.subcategory || typeof leadData.subcategory !== "string") {
+    if (!leadData.subcategory || typeof leadData.subcategory !== "string" || !validSubcategories.includes(leadData.subcategory)) {
       leadData.subcategory = "india_property"
     }
 
