@@ -45,8 +45,6 @@ const leadFields = [
   { key: "stage", label: "Stage", required: false },
   { key: "priority", label: "Priority", required: false },
   { key: "status", label: "Status", required: false },
-  { key: "category", label: "Category", required: false },
-  { key: "subcategory", label: "Subcategory", required: false },
   { key: "projectName", label: "Project Name", required: false },
   { key: "notes", label: "Notes", required: false },
 ]
@@ -609,8 +607,6 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
                       <TableHead>Phone</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>City</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Subcategory</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -620,8 +616,6 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
                         <TableCell>{lead.phone}</TableCell>
                         <TableCell>{lead.email || "-"}</TableCell>
                         <TableCell>{lead.city || "-"}</TableCell>
-                        <TableCell>{leadCategoryLabels[lead.category || "other"]}</TableCell>
-                        <TableCell>{leadSubcategoryLabels[lead.subcategory || "other"]}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
