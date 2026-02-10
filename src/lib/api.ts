@@ -46,9 +46,16 @@ export const fetchLeads = async () => {
 }
 
 export const createLead = async (leadData: any) => {
+  // Ensure category and subcategory always have default values
+  const dataWithDefaults = {
+    ...leadData,
+    category: leadData.category || "property",
+    subcategory: leadData.subcategory || "india_property",
+  }
+  
   // Remove undefined and empty string values
   const cleanedData = Object.fromEntries(
-    Object.entries(leadData).filter(([_, v]) => v !== undefined && v !== "")
+    Object.entries(dataWithDefaults).filter(([_, v]) => v !== undefined && v !== "")
   )
   
   console.log("[v0] Sending to API:", cleanedData)

@@ -49,6 +49,14 @@ router.post("/", async (req, res) => {
   try {
     const leadData = { ...req.body }
     delete leadData.id
+    
+    // Ensure category and subcategory always have valid default values
+    if (!leadData.category || typeof leadData.category !== "string") {
+      leadData.category = "property"
+    }
+    if (!leadData.subcategory || typeof leadData.subcategory !== "string") {
+      leadData.subcategory = "india_property"
+    }
 
     const assignmentResult = await autoAssignLead()
 
