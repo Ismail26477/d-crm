@@ -24,12 +24,8 @@ router.get("/", async (req, res) => {
       stage: lead.stage,
       priority: lead.priority,
       status: lead.status,
-      category: lead.category,
-      subcategory: lead.subcategory,
       assignedCaller: lead.assignedCaller?.toString(),
       assignedCallerName: lead.assignedCallerName,
-      assignedBroker: lead.assignedBroker?.toString(),
-      assignedBrokerName: lead.assignedBrokerName,
       projectName: lead.projectName,
       nextFollowUp: lead.nextFollowUp,
       followUpReason: lead.followUpReason,
@@ -47,37 +43,26 @@ router.get("/", async (req, res) => {
 // Create new lead
 router.post("/", async (req, res) => {
   try {
+    console.log("[v0] Received lead data:", req.body)
+
     const leadData = { ...req.body }
     delete leadData.id
-    
-    // Ensure category and subcategory always have valid default values
-    if (!leadData.category || typeof leadData.category !== "string") {
-      leadData.category = "property"
-    }
-    if (!leadData.subcategory || typeof leadData.subcategory !== "string") {
-      leadData.subcategory = "india_property"
-    }
 
     const assignmentResult = await autoAssignLead()
 
     if (assignmentResult) {
       leadData.assignedCaller = assignmentResult.callerId
       leadData.assignedCallerName = assignmentResult.callerName
+      console.log("[v0] Lead auto-assigned to:", assignmentResult.callerName)
     } else if (!leadData.assignedCaller || leadData.assignedCaller === "unassigned") {
       delete leadData.assignedCaller
       delete leadData.assignedCallerName
     }
 
-    // Handle broker assignment - remove if not provided or marked as unassigned
-    if (!leadData.assignedBroker || leadData.assignedBroker === "unassigned" || leadData.assignedBroker === "") {
-      delete leadData.assignedBroker
-      delete leadData.assignedBrokerName
-    }
-
     const lead = new Lead(leadData)
     await lead.save()
 
-
+    console.log("[v0] Lead created successfully:", lead._id)
 
     if (assignmentResult) {
       try {
@@ -105,30 +90,9 @@ router.post("/", async (req, res) => {
     })
     await activity.save()
 
-    const leadObj = lead.toObject()
     res.status(201).json({
       id: lead._id.toString(),
-      name: leadObj.name,
-      phone: leadObj.phone,
-      email: leadObj.email,
-      city: leadObj.city,
-      value: leadObj.value,
-      source: leadObj.source,
-      stage: leadObj.stage,
-      priority: leadObj.priority,
-      status: leadObj.status,
-      category: leadObj.category,
-      subcategory: leadObj.subcategory,
-      assignedCaller: leadObj.assignedCaller?.toString(),
-      assignedCallerName: leadObj.assignedCallerName,
-      assignedBroker: leadObj.assignedBroker?.toString(),
-      assignedBrokerName: leadObj.assignedBrokerName,
-      projectName: leadObj.projectName,
-      nextFollowUp: leadObj.nextFollowUp,
-      followUpReason: leadObj.followUpReason,
-      notes: leadObj.notes,
-      createdAt: leadObj.createdAt,
-      updatedAt: leadObj.updatedAt,
+      ...lead.toObject(),
     })
   } catch (error) {
     console.error("[v0] Error creating lead:", error)
