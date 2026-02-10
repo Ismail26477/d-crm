@@ -298,22 +298,6 @@ export const ImportLeadsDialog = ({ open, onOpenChange, onImport }: ImportLeadsD
           case "notes":
             lead.notes = String(value).trim()
             break
-          case "category":
-            const categoryValue = String(value).toLowerCase().trim()
-            if (categoryValue.includes("property")) lead.category = "property"
-            else if (categoryValue.includes("loan")) lead.category = "loans"
-            else lead.category = "other"
-            break
-          case "subcategory":
-            const subcategoryValue = String(value).toLowerCase().trim()
-            if (subcategoryValue.includes("india")) lead.subcategory = "india_property"
-            else if (subcategoryValue.includes("australia")) lead.subcategory = "australia_property"
-            else if (subcategoryValue.includes("dubai")) lead.subcategory = "dubai_property"
-            else if (subcategoryValue.includes("personal")) lead.subcategory = "personal_loan"
-            else if (subcategoryValue.includes("home")) lead.subcategory = "home_loan"
-            else if (subcategoryValue.includes("business")) lead.subcategory = "business_loan"
-            else lead.subcategory = "other"
-            break
         }
       })
 
